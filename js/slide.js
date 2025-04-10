@@ -2,6 +2,7 @@ export default class Slide {
     constructor(wrapper, slide) {
         this.wrapper = document.querySelector(wrapper);
         this.slide = document.querySelector(slide);
+        console.log(this.slide)
         this.dist = { finalPosition: 0, startX: 0, movement: 0 }
     }
     // método para mexer o slide
@@ -57,9 +58,41 @@ export default class Slide {
         this.onEnd = this.onEnd.bind(this);
     }
 
+    // Slides config
+    slidePosition(slide) {
+        const margin = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
+        return - (slide.offsetLeft - margin);
+    }
+
+    slideConfig() {
+        this.slideArray = [...this.slide.children].map((element) => {
+            const position = this.slidePosition(element)
+            return { position, element }
+        });
+    }
+
+    slideIndexNav(index) {
+        const last = this.slideArray.length - 1;
+        console.log(last)
+        this.index = {
+            prev: index ? index - 1 : undefined,
+            active: index,
+            next: index === last ? undefined : index + 1,
+        }
+    }
+
+    changeSlide(index) {
+        const activeSlide = this.slideArray[index];
+        this.moveSlide(activeSlide.position);
+        this.slideIndexNav(index);
+        this.dist.finalPosition = activeSlide.position;
+    }
+
     init() {
         this.bindEvent();
         this.addSlideEvent();
+        this.slideConfig()
+        // this.slidePosition()
         return this
     }
 }
