@@ -2,9 +2,13 @@ export default class Slide {
     constructor(wrapper, slide) {
         this.wrapper = document.querySelector(wrapper);
         this.slide = document.querySelector(slide);
-        console.log(this.slide)
         this.dist = { finalPosition: 0, startX: 0, movement: 0 }
     }
+
+    transition(active) {
+        this.slide.style.transition = active ? 'transform .3s' : '';
+    }
+
     // método para mexer o slide
     moveSlide(distX) {
         this.dist.movePosition = distX;
@@ -30,6 +34,7 @@ export default class Slide {
         }
         // o evento mousemove so irá ser executado após dar onStart
         this.wrapper.addEventListener(movetype, this.onMove);
+        this.transition(false);
     }
 
     onMove(event) {
@@ -42,6 +47,18 @@ export default class Slide {
         const moveType = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
         this.wrapper.removeEventListener(moveType, this.onMove);
         this.dist.finalPosition = this.dist.movePosition;
+        this.transition(true);
+        this.changeSlideOnEnd();
+    }
+
+    changeSlideOnEnd() {
+        if (this.dist.movement > 120 && this.index.next != undefined) {
+            this.activeNextSlide();
+        } else if (this.dist.movement < -120 && this.index.prev != undefined) {
+            this.activePrevSlide();
+        } else {
+            this.changeSlide(this.index.active);
+        }
     }
 
     // Método para adicionar Eventos
@@ -66,14 +83,13 @@ export default class Slide {
 
     slideConfig() {
         this.slideArray = [...this.slide.children].map((element) => {
-            const position = this.slidePosition(element)
+            const position = this.slidePosition(element);
             return { position, element }
         });
     }
 
     slideIndexNav(index) {
         const last = this.slideArray.length - 1;
-        console.log(last)
         this.index = {
             prev: index ? index - 1 : undefined,
             active: index,
@@ -81,6 +97,7 @@ export default class Slide {
         }
     }
 
+    // Metodo que muda o slide de acordo o index que passar nele
     changeSlide(index) {
         const activeSlide = this.slideArray[index];
         this.moveSlide(activeSlide.position);
@@ -88,8 +105,20 @@ export default class Slide {
         this.dist.finalPosition = activeSlide.position;
     }
 
+    activePrevSlide() {
+        if (this.index.prev !== undefined) {
+            this.changeSlide(this.index.prev);
+        }
+    }
+    activeNextSlide() {
+        if (this.index.next !== undefined) {
+            this.changeSlide(this.index.next);
+        }
+    }
+
     init() {
         this.bindEvent();
+        this.transition(true);
         this.addSlideEvent();
         this.slideConfig()
         // this.slidePosition()
