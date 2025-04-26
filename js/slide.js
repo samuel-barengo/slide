@@ -6,6 +6,7 @@ export class Slide {
         this.slide = document.querySelector(slide);
         this.dist = { finalPosition: 0, startX: 0, movement: 0 }
         this.activeClass = 'active';
+        this.changeEvent = new Event('changeEvent');
     }
 
     transition(active) {
@@ -101,25 +102,28 @@ export class Slide {
         this.slideIndexNav(index);
         this.dist.finalPosition = activeSlide.position;
         this.changeActiveClass();
+        this.wrapper.dispatchEvent(this.changeEvent);
     }
 
     changeActiveClass() {
         this.slideArray.forEach(item => item.element.classList.remove(this.activeClass));
         this.slideArray[this.index.active].element.classList.add(this.activeClass);
     }
+
     activePrevSlide() {
         if (this.index.prev !== undefined) {
             this.changeSlide(this.index.prev);
         }
     }
     activeNextSlide() {
-        if (this.index.next !== undefined) this.changeSlide(this.index.next);}
+        if (this.index.next !== undefined) this.changeSlide(this.index.next);
+    }
 
     onResize() {
         setTimeout(() => {
             this.slideConfig();
             this.changeSlide(this.index.active);
-        }, 1000);   
+        }, 1000);
     }
 
     addResizeEvent() {
@@ -143,11 +147,15 @@ export class Slide {
         this.slideConfig();
         this.addResizeEvent();
         this.changeSlide(0)
-        return this; 
+        return this;
     }
 }
 
 export class SlideNav extends Slide {
+    constructor(slide, wrapper) {
+        super(slide, wrapper)
+        this.bindControlEvents();
+    }
     addArrow(prev, next) {
         this.prevElement = document.querySelector(prev);
         this.nextElement = document.querySelector(next);
@@ -157,6 +165,44 @@ export class SlideNav extends Slide {
     addArrowEvent() {
         this.prevElement.addEventListener('click', this.activePrevSlide);
         this.nextElement.addEventListener('click', this.activeNextSlide);
+    }
+
+    createControl() {
+        const control = document.createElement('ul');
+        control.dataset.control = 'slide';
+        this.slideArray.forEach((item, index) => {
+            control.innerHTML += `<li><a href="#slide${index + 1}">${index + 1}</a></li>`;
+        });
+        this.wrapper.appendChild(control);
+        return control;
+    }
+
+    eventControl(item, index) {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            this.changeSlide(index);
+            this.activeControlItem()
+        });
+        this.wrapper.addEventListener('changeEvent', this.activeControlItem);
+    }
+
+    activeControlItem() {
+        this.controlArray.forEach(item => item.classList.remove(this.activeClass));
+        this.controlArray[this.index.active].classList.add(this.activeClass);
+    }
+
+    addControl(customControl) {
+        this.control = document.querySelector(customControl) || this.createControl();
+        this.controlArray = [...this.control.childNodes];
+        this.controlArray.forEach(this.eventControl);
+        // this.controlArray.forEach((item, index) => {
+        //     this.eventControl(item, index);
+        // })
+    }
+
+    bindControlEvents() {
+        this.eventControl = this.eventControl.bind(this);
+        this.activeControlItem = this.activeControlItem.bind(this);
     }
 }
 
