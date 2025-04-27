@@ -56,10 +56,12 @@ img {
     height: 12px;
     border-radius: 50%;
     background: #fb5;
-    overflow:hidden;
+    overflow: hidden;
     text-indent: -999px;
     margin: 5px;
 }
-[data-control="slide"] li.active a, [data-control="slide"] li a:hover {
+
+[data-control="slide"] li.active a,
+[data-control="slide"] li a:hover {
     background: #e54;
 }
